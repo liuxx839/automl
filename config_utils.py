@@ -34,8 +34,15 @@ def add_config_section():
     st.sidebar.header("配置")
     config_file = st.sidebar.file_uploader("上传配置文件（可选）", type=["json"])
     if config_file is not None:
-        load_configuration(config_file)
-        st.sidebar.success("配置已加载")
+        try:
+            load_configuration(config_file)
+            st.sidebar.success("配置已加载")
+        except json.JSONDecodeError:
+            st.sidebar.error("无效的 JSON 文件")
+        except KeyError as e:
+            st.sidebar.error(f"配置文件缺少必要的键: {str(e)}")
+        except Exception as e:
+            st.sidebar.error(f"加载配置时出错: {str(e)}")
     
     if st.sidebar.button("保存当前配置"):
         save_configuration()
