@@ -103,12 +103,21 @@ if page == 'Data Loading':
             
             columns = st.session_state.data.columns.tolist()
             
-            # 使用 st.multiselect 进行框选
-            st.session_state.input_cols = st.multiselect(
-                "选择输入列（可多选）",
-                options=columns,
-                default=st.session_state.input_cols if st.session_state.input_cols else []
-            )
+            st.write("选择输入列：")
+            col1, col2 = st.columns(2)
+            selected_input_cols = []
+            
+            for i, col in enumerate(columns):
+                if i % 2 == 0:
+                    with col1:
+                        if st.checkbox(col, value=col in st.session_state.input_cols):
+                            selected_input_cols.append(col)
+                else:
+                    with col2:
+                        if st.checkbox(col, value=col in st.session_state.input_cols):
+                            selected_input_cols.append(col)
+            
+            st.session_state.input_cols = selected_input_cols
             
             st.session_state.output_col = st.selectbox("选择输出列", columns, index=columns.index(st.session_state.output_col) if st.session_state.output_col in columns else 0)
             
