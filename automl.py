@@ -191,9 +191,7 @@ elif page == 'Model Running':
                                       st.session_state.processed_data.columns.tolist(), 
                                       default=st.session_state.groupby_cols)
         st.session_state.groupby_cols = groupby_cols
-        
-        if st.button("运行模型"):
-        
+                
         if st.button("运行模型"):
             with st.spinner("正在运行模型..."):
                 model_func = MODEL_LIST[model_name]
