@@ -27,7 +27,7 @@ def run_causal_inference(X, y):
     Y_column = y.name
     S_columns = X.columns.tolist()
     
-    results, effects_dict = mean_confidence_interval(df, S_columns, Y_column)
+    results_df, effects_dict = mean_confidence_interval(df, S_columns, Y_column)
     
     return results_df
 
