@@ -121,14 +121,18 @@ elif page == 'Data Preprocessing':
         apply_fe = st.checkbox("应用特征工程", value=bool(st.session_state.feature_engineering_methods))
         if apply_fe:
             feature_engineering_methods = {}
+            binarize_thresholds = {}
             for method in FEATURE_ENGINEERING_METHODS.keys():
-                cols = st.multiselect(f"选择要应用 {method} 的列", st.session_state.input_cols, default=st.session_state.feature_engineering_methods.get(method, []))
+                all_cols = st.session_state.input_cols + [st.session_state.output_col]
+                cols = st.multiselect(f"选择要应用 {method} 的列", all_cols, default=st.session_state.feature_engineering_methods.get(method, []))
                 if cols:
                     feature_engineering_methods[method] = cols
                     if method == 'Binarize':
+                        binarize_thresholds = {}
                         for col in cols:
                             threshold = st.number_input(f"输入 {col} 的二值化阈值", value=0.5)
-                            # 在这里，你可能需要存储这个阈值，以便后续使用
+                            binarize_thresholds[col] = threshold
+            feature_engineering_methods['Binarize_threshold'] = binarize_thresholds
             st.session_state.feature_engineering_methods = feature_engineering_methods
         else:
             st.session_state.feature_engineering_methods = {}
@@ -142,10 +146,11 @@ elif page == 'Data Preprocessing':
                 
                 # 应用特征工程
                 if apply_fe:
-                    processed_df, new_input_cols = apply_feature_engineering(cleaned_df, 
+                    processed_df, new_input_cols, new_output_col = apply_feature_engineering(cleaned_df, 
                                                                              st.session_state.input_cols, 
                                                                              st.session_state.output_col, 
                                                                              st.session_state.feature_engineering_methods)
+                    st.session_state.output_col = new_output_col
                 else:
                     processed_df, new_input_cols = cleaned_df, st.session_state.input_cols
                 
