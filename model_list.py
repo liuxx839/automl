@@ -29,7 +29,7 @@ def run_causal_inference(X, y):
     
     results_df, effects_dict = mean_confidence_interval(df, S_columns, Y_column)
     
-    return results_df
+    return results_df  # 确保返回 results_df
 
 def mean_confidence_interval(df, S_columns, Y_column, confidence_level=0.95):
     start_time = time.time()
