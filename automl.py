@@ -104,18 +104,13 @@ if page == 'Data Loading':
             columns = st.session_state.data.columns.tolist()
             
             st.write("选择输入列：")
-            col1, col2 = st.columns(2)
+            col1, col2, col3, col4 = st.columns(4)
             selected_input_cols = []
             
             for i, col in enumerate(columns):
-                if i % 2 == 0:
-                    with col1:
-                        if st.checkbox(col, value=col in st.session_state.input_cols):
-                            selected_input_cols.append(col)
-                else:
-                    with col2:
-                        if st.checkbox(col, value=col in st.session_state.input_cols):
-                            selected_input_cols.append(col)
+                with [col1, col2, col3, col4][i % 4]:
+                    if st.checkbox(col, value=col in st.session_state.input_cols):
+                        selected_input_cols.append(col)
             
             st.session_state.input_cols = selected_input_cols
             
