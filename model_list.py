@@ -29,10 +29,7 @@ def run_causal_inference(X, y):
     
     results, effects_dict = mean_confidence_interval(df, S_columns, Y_column)
     
-    # 为了符合当前格式，我们返回一个预测结果
-    # 这里我们使用第一个处理变量的效应作为示例
-    first_effect = effects_dict[S_columns[0]]
-    return pd.Series(first_effect, index=X.index)
+    return results_df
 
 def mean_confidence_interval(df, S_columns, Y_column, confidence_level=0.95):
     start_time = time.time()
