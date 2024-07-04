@@ -27,6 +27,8 @@ if 'original_row_count' not in st.session_state:
     st.session_state.original_row_count = None
 if 'processed_row_count' not in st.session_state:
     st.session_state.processed_row_count = None
+if 'model_name' not in st.session_state:
+    st.session_state.model_name = None
 
 # 添加配置部分到侧边栏
 add_config_section()
@@ -184,14 +186,15 @@ elif page == 'Model Running':
     if st.session_state.processed_data is not None:
         model_name = st.selectbox("选择模型", list(MODEL_LIST.keys()), 
                                   index=list(MODEL_LIST.keys()).index(st.session_state.model_name) 
-                                  if st.session_state.model_name in MODEL_LIST.keys() else 0)
+                                  if st.session_state.model_name in MODEL_LIST.keys() 
+                                  else 0)
         st.session_state.model_name = model_name
         
         groupby_cols = st.multiselect("选择分组列（可选）", 
                                       st.session_state.processed_data.columns.tolist(), 
-                                      default=st.session_state.groupby_cols)
+                                      default=st.session_state.get('groupby_cols', []))
         st.session_state.groupby_cols = groupby_cols
-                
+        
         if st.button("运行模型"):
             with st.spinner("正在运行模型..."):
                 model_func = MODEL_LIST[model_name]
