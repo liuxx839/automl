@@ -88,6 +88,7 @@ def run_model(df, input_cols, output_col, groupby_cols, model_func):
         
         return pd.DataFrame({'Actual': y, 'Predicted': prediction})
 
+# Data Loading 页面
 if page == 'Data Loading':
     st.title('数据加载和选择')
     
@@ -95,44 +96,29 @@ if page == 'Data Loading':
     
     if uploaded_file is not None:
         try:
-            st.write(f"正在尝试加载文件：{uploaded_file.name}")
-            loaded_data = load_data(uploaded_file)
-            
-            st.session_state.data = loaded_data
+            st.session_state.data = load_data(uploaded_file)
             st.session_state.original_row_count = len(st.session_state.data)
-            st.write(f"成功加载数据。行数：{st.session_state.original_row_count}")
             st.write("数据预览：")
             st.dataframe(st.session_state.data.head())
             
             columns = st.session_state.data.columns.tolist()
-            st.write(f"列数：{len(columns)}")
             
-            st.write("选择输入列：")
-            col1, col2, col3, col4 = st.columns(4)
-            selected_input_cols = []
+            # 使用 st.multiselect 进行框选
+            st.session_state.input_cols = st.multiselect(
+                "选择输入列（可多选）",
+                options=columns,
+                default=st.session_state.input_cols if st.session_state.input_cols else []
+            )
             
-            for i, col in enumerate(columns):
-                with [col1, col2, col3, col4][i % 4]:
-                    if st.checkbox(col, value=col in st.session_state.get('input_cols', [])):
-                        selected_input_cols.append(col)
+            st.session_state.output_col = st.selectbox("选择输出列", columns, index=columns.index(st.session_state.output_col) if st.session_state.output_col in columns else 0)
             
-            st.session_state.input_cols = selected_input_cols
-            
-            if columns:
-                default_index = columns.index(st.session_state.get('output_col', columns[0])) if st.session_state.get('output_col') in columns else 0
-                st.session_state.output_col = st.selectbox("选择输出列", columns, index=default_index)
-            
-                if st.session_state.input_cols and st.session_state.output_col:
-                    stats = display_stats(st.session_state.data, st.session_state.input_cols + [st.session_state.output_col])
-                    st.write("选定列的统计信息：")
-                    st.dataframe(stats)
-            else:
-                st.warning("数据集没有列。请检查文件内容。")
+            if st.session_state.input_cols and st.session_state.output_col:
+                stats = display_stats(st.session_state.data, st.session_state.input_cols + [st.session_state.output_col])
+                st.write("选定列的统计信息：")
+                st.dataframe(stats)
         
         except Exception as e:
             st.error(f"文件加载错误：{str(e)}")
-            st.error("请检查文件格式是否正确，并确保文件不为空。")
-            st.write(f"文件详情：名称 = {uploaded_file.name}, 大小 = {uploaded_file.size} bytes, 类型 = {uploaded_file.type}")
 
 # Data Preprocessing 页面
 elif page == 'Data Preprocessing':
