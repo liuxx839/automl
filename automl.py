@@ -183,34 +183,21 @@ elif page == 'Model Running':
         
         if st.button("运行模型"):
             with st.spinner("正在运行模型..."):
-                final_result = run_model(st.session_state.processed_data, 
-                                         st.session_state.input_cols, 
-                                         st.session_state.output_col, 
-                                         groupby_cols, 
-                                         MODEL_LIST[model_name])
-            
-            ##
+                model_func = MODEL_LIST[model_name]
+                if model_name == 'Causal Inference':
+                    final_result = model_func(st.session_state.processed_data[st.session_state.input_cols], 
+                                              st.session_state.processed_data[st.session_state.output_col])
+                else:
+                    final_result = run_model(st.session_state.processed_data, 
+                                             st.session_state.input_cols, 
+                                             st.session_state.output_col, 
+                                             groupby_cols, 
+                                             model_func)
+        
             if final_result is not None:
                 st.write("模型结果：")
                 st.dataframe(final_result)
-                
-                if isinstance(final_result, pd.DataFrame):
-                    if 'Actual' in final_result.columns and 'Predicted' in final_result.columns:
-                        mse = np.mean((final_result['Actual'] - final_result['Predicted'])**2)
-                        st.write(f"总体均方误差 (MSE): {mse:.4f}")
-                    else:
-                        st.write("模型结果统计：")
-                        st.write(final_result.describe())
-                
-                elif isinstance(final_result, pd.Series):
-                    st.write("模型结果统计：")
-                    st.write(final_result.describe())
-                
-                elif isinstance(final_result, np.ndarray):
-                    st.write("模型结果统计：")
-                    st.write(pd.Series(final_result).describe())
-                
-                # 对于因果推断模型，展示特定的结果
+        
                 if model_name == 'Causal Inference':
                     st.write("因果效应估计：")
                     for col in final_result.columns:
@@ -239,9 +226,18 @@ elif page == 'Model Running':
                                       xaxis_title='处理变量',
                                       yaxis_title='效应大小')
                     st.plotly_chart(fig)
-            
-            # 显示处理后的数据行数
-            st.write(f"原始数据行数: {st.session_state.original_row_count}")
-            st.write(f"处理后数据行数: {st.session_state.processed_row_count}")
+                else:
+                    if isinstance(final_result, pd.DataFrame) and 'Actual' in final_result.columns and 'Predicted' in final_result.columns:
+                        mse = np.mean((final_result['Actual'] - final_result['Predicted'])**2)
+                        st.write(f"总体均方误差 (MSE): {mse:.4f}")
+                    else:
+                        st.write("模型结果统计：")
+                        st.write(final_result.describe())
+        
+                # 显示处理后的数据行数
+                st.write(f"原始数据行数: {st.session_state.original_row_count}")
+                st.write(f"处理后数据行数: {st.session_state.processed_row_count}")
+            else:
+                st.error("模型运行失败，没有返回结果。")
     else:
         st.warning("请先完成数据加载和预处理步骤。")
