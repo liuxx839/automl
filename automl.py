@@ -4,6 +4,7 @@ import numpy as np
 from model_list import MODEL_LIST
 from feature_engineering import FEATURE_ENGINEERING_METHODS, apply_feature_engineering
 from data_cleaning import DATA_CLEANING_METHODS
+from config_utils import add_config_section
 
 st.set_page_config(layout="wide")
 
@@ -26,6 +27,9 @@ if 'original_row_count' not in st.session_state:
     st.session_state.original_row_count = None
 if 'processed_row_count' not in st.session_state:
     st.session_state.processed_row_count = None
+
+# 添加配置部分到侧边栏
+add_config_section()
 
 # 侧边栏导航
 st.sidebar.title('导航')
