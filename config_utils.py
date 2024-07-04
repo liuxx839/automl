@@ -23,11 +23,11 @@ def save_configuration():
 
 def load_configuration(config_file):
     config = json.load(config_file)
-    st.session_state.input_cols = config['input_cols']
-    st.session_state.output_col = config['output_col']
-    st.session_state.cleaning_method = config['cleaning_method']
-    st.session_state.feature_engineering_methods = config['feature_engineering_methods']
-    st.session_state.model_name = config.get('model_name', '')
+    st.session_state.input_cols = config.get('input_cols', [])
+    st.session_state.output_col = config.get('output_col', None)
+    st.session_state.cleaning_method = config.get('cleaning_method', None)
+    st.session_state.feature_engineering_methods = config.get('feature_engineering_methods', {})
+    st.session_state.model_name = config.get('model_name', None)
     st.session_state.groupby_cols = config.get('groupby_cols', [])
 
 def add_config_section():
