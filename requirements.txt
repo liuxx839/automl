@@ -1,5 +1,9 @@
-streamlit
 pandas
 numpy
 scikit-learn
+xgboost
+econml
+lightgbm
+scipy
+streamlit
 openpyxl
