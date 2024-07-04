@@ -182,8 +182,17 @@ elif page == 'Model Running':
     st.title('模型运行')
     
     if st.session_state.processed_data is not None:
-        model_name = st.selectbox("选择模型", list(MODEL_LIST.keys()))
-        groupby_cols = st.multiselect("选择分组列（可选）", st.session_state.processed_data.columns.tolist())
+        model_name = st.selectbox("选择模型", list(MODEL_LIST.keys()), 
+                                  index=list(MODEL_LIST.keys()).index(st.session_state.model_name) 
+                                  if st.session_state.model_name in MODEL_LIST.keys() else 0)
+        st.session_state.model_name = model_name
+        
+        groupby_cols = st.multiselect("选择分组列（可选）", 
+                                      st.session_state.processed_data.columns.tolist(), 
+                                      default=st.session_state.groupby_cols)
+        st.session_state.groupby_cols = groupby_cols
+        
+        if st.button("运行模型"):
         
         if st.button("运行模型"):
             with st.spinner("正在运行模型..."):
