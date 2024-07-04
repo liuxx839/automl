@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Binarizer, OneHotEncoder
 
 def standardize(df, columns):
-    
     scaler = StandardScaler()
     df[columns] = scaler.fit_transform(df[columns])
     return df
@@ -28,7 +27,17 @@ def one_hot_encode(df, columns):
 
 def log_transform(df, columns):
     for col in columns:
+        # 对数变换前先将非正值替换为一个很小的正数
+        min_positive = df[df[col] > 0][col].min()
+        df[col] = df[col].replace({0: min_positive/2})
         df[f'{col}_log'] = np.log1p(df[col])
+        
+        # 处理无穷大和无穷小的情况
+        df[f'{col}_log'] = df[f'{col}_log'].replace([np.inf, -np.inf], np.nan)
+        
+        # 用该列的均值填充 NaN 值
+        df[f'{col}_log'] = df[f'{col}_log'].fillna(df[f'{col}_log'].mean())
+    
     return df
 
 FEATURE_ENGINEERING_METHODS = {
@@ -44,17 +53,27 @@ def apply_feature_engineering(df, input_cols, output_col, methods):
     new_input_cols = input_cols.copy()
     
     for method, columns in methods.items():
+        if output_col in columns:
+            columns.remove(output_col)  # 暂时移除输出列
+        
         if method == 'Binarize':
             for col in columns:
-                # 这里不再使用 st.number_input，而是使用一个固定的阈值或者从外部传入
-                threshold = 0.5  # 可以改为从参数传入
+                threshold = methods['Binarize_threshold'].get(col, 0.5)  # 获取每列的阈值
                 processed_df = FEATURE_ENGINEERING_METHODS[method](processed_df, col, threshold)
         elif method == 'One-Hot Encode':
             processed_df = FEATURE_ENGINEERING_METHODS[method](processed_df, columns)
-            new_input_cols = [col for col in processed_df.columns if col != output_col]
+            new_input_cols = [col for col in processed_df.columns if col != output_col and col not in columns]
+            new_input_cols.extend([col for col in processed_df.columns if col.startswith(tuple(columns))])
         else:
             processed_df = FEATURE_ENGINEERING_METHODS[method](processed_df, columns)
             if method == 'Log Transform':
                 new_input_cols.extend([f'{col}_log' for col in columns])
+        
+        if output_col in methods[method]:
+            # 对输出列应用相同的转换
+            if method != 'One-Hot Encode':  # One-Hot编码不适用于输出列
+                processed_df = FEATURE_ENGINEERING_METHODS[method](processed_df, [output_col])
+                if method == 'Log Transform':
+                    output_col = f'{output_col}_log'
     
-    return processed_df, new_input_cols
+    return processed_df, new_input_cols, output_col
