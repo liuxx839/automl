@@ -102,7 +102,14 @@ if page == 'Data Loading':
             st.dataframe(st.session_state.data.head())
             
             columns = st.session_state.data.columns.tolist()
-            st.session_state.input_cols = st.multiselect("选择输入列", columns, default=st.session_state.input_cols)
+            
+            # 使用 st.multiselect 进行框选
+            st.session_state.input_cols = st.multiselect(
+                "选择输入列（可多选）",
+                options=columns,
+                default=st.session_state.input_cols if st.session_state.input_cols else []
+            )
+            
             st.session_state.output_col = st.selectbox("选择输出列", columns, index=columns.index(st.session_state.output_col) if st.session_state.output_col in columns else 0)
             
             if st.session_state.input_cols and st.session_state.output_col:
