@@ -189,15 +189,59 @@ elif page == 'Model Running':
                                          groupby_cols, 
                                          MODEL_LIST[model_name])
             
+            ##
             if final_result is not None:
                 st.write("模型结果：")
                 st.dataframe(final_result)
                 
-                mse = np.mean((final_result['Actual'] - final_result['Predicted'])**2)
-                st.write(f"总体均方误差 (MSE): {mse:.4f}")
-
-                # 显示处理后的数据行数
-                st.write(f"原始数据行数: {st.session_state.original_row_count}")
-                st.write(f"处理后数据行数: {st.session_state.processed_row_count}")
+                if isinstance(final_result, pd.DataFrame):
+                    if 'Actual' in final_result.columns and 'Predicted' in final_result.columns:
+                        mse = np.mean((final_result['Actual'] - final_result['Predicted'])**2)
+                        st.write(f"总体均方误差 (MSE): {mse:.4f}")
+                    else:
+                        st.write("模型结果统计：")
+                        st.write(final_result.describe())
+                
+                elif isinstance(final_result, pd.Series):
+                    st.write("模型结果统计：")
+                    st.write(final_result.describe())
+                
+                elif isinstance(final_result, np.ndarray):
+                    st.write("模型结果统计：")
+                    st.write(pd.Series(final_result).describe())
+                
+                # 对于因果推断模型，展示特定的结果
+                if model_name == 'Causal Inference':
+                    st.write("因果效应估计：")
+                    for col in final_result.columns:
+                        if col != 'T_column':
+                            st.write(f"{col}: {final_result[col].mean():.4f}")
+                    
+                    # 可视化因果效应
+                    import plotly.graph_objects as go
+                    
+                    fig = go.Figure()
+                    for _, row in final_result.iterrows():
+                        fig.add_trace(go.Scatter(
+                            x=[row['T_column'], row['T_column']],
+                            y=[row['Lower Bound'], row['Upper Bound']],
+                            mode='lines',
+                            name=row['T_column']
+                        ))
+                        fig.add_trace(go.Scatter(
+                            x=[row['T_column']],
+                            y=[row['Effect Mean']],
+                            mode='markers',
+                            name=row['T_column'] + ' mean'
+                        ))
+                    
+                    fig.update_layout(title='因果效应估计及置信区间',
+                                      xaxis_title='处理变量',
+                                      yaxis_title='效应大小')
+                    st.plotly_chart(fig)
+            
+            # 显示处理后的数据行数
+            st.write(f"原始数据行数: {st.session_state.original_row_count}")
+            st.write(f"处理后数据行数: {st.session_state.processed_row_count}")
     else:
         st.warning("请先完成数据加载和预处理步骤。")
